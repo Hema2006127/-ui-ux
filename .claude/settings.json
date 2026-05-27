@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"Get-Content 'c:\\\\Users\\\\mahmi\\\\Desktop\\\\اشاره ui ux\\\\ui_mockup.html' | Measure-Object -Line\")",
+      "Bash(powershell -Command \"Select-String -Path 'c:\\\\Users\\\\mahmi\\\\Desktop\\\\اشاره ui ux\\\\ui_mockup.html' -Pattern 'screen-otp|screen-forgot|screen-onboarding|navigateAuth|showToast|startVideoCall|goToSlide' | Select-Object LineNumber, Line | Format-Table -AutoSize\")",
+      "Read(//c/Users/mahmi/.claude/projects/c--Users-mahmi-Desktop-------ui-ux/memory/**)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\mahmi\\.claude\\projects\\c--Users-mahmi-Desktop-------ui-ux\\memory"
+    ]
+  }
+}

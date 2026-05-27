@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق إشارة - النموذج الكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #0F172A;
+            --primary-bg-grad: #090e1a;
+            --accent-gold: #C5A880;
+            --accent-gold-dark: #a8895e;
+            --text-main: #F8F9FA;
+            --text-muted: #94A3B8;
+            --card-bg: rgba(255,255,255,0.05);
+            --card-border: rgba(197,168,128,0.2);
+            --nav-bg: rgba(9,14,26,0.95);
+            --input-bg: rgba(255,255,255,0.07);
+            --shadow-color: rgba(0,0,0,0.35);
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+        [data-theme="light"] {
+            --primary-bg: #F0F4F8;
+            --primary-bg-grad: #E2E8F0;
+            --accent-gold: #B38F5A;
+            --accent-gold-dark: #966e35;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --card-bg: rgba(255,255,255,0.9);
+            --card-border: rgba(179,143,90,0.25);
+            --nav-bg: rgba(240,244,248,0.97);
+            --input-bg: rgba(255,255,255,1);
+            --shadow-color: rgba(0,0,0,0.08);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+        h1,h2,h3,h4 { font-family: 'Cairo', sans-serif; }
+
+        /* ===================== PHONE FRAME ===================== */
+        .phone-mockup {
+            width: 390px; height: 844px;
+            background: linear-gradient(160deg, var(--primary-bg-grad), var(--primary-bg));
+            border-radius: 44px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 2px #2d3748, 0 0 0 10px #1a202c, 0 0 0 12px #2d3748;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .notch {
+            position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+            width: 110px; height: 28px; background: #000; border-radius: 20px; z-index: 200;
+        }
+        .status-bar {
+            position: absolute; top: 14px; left: 0; right: 0; z-index: 201;
+            display: flex; justify-content: space-between; padding: 0 24px;
+            font-size: 0.65rem; color: var(--text-main); font-weight: 600;
+        }
+        .status-bar .time { padding-right: 5px; font-size: 0.7rem; }
+        .status-icons { display: flex; gap: 5px; align-items: center; }
+
+        /* ===================== HEADER ===================== */
+        .app-header {
+            padding: 52px 20px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            min-height: 110px; z-index: 10; position: relative;
+            backdrop-filter: blur(10px);
+        }
+        .header-back {
+            color: var(--text-main); font-size: 1.1rem; cursor: pointer;
+            width: 38px; height: 38px; border-radius: 12px;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            display: none; justify-content: center; align-items: center;
+        }
+        .header-back:hover { background: rgba(197,168,128,0.15); }
+        .user-greeting { flex: 1; padding-right: 12px; }
+        .user-greeting p { font-size: 0.82rem; color: var(--text-muted); }
+        .user-greeting h2 { font-size: 1.35rem; font-weight: 800; color: var(--accent-gold); margin-top: 2px; }
+        .header-title { flex: 1; text-align: center; display: none; }
+        .header-title h2 { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
+        .profile-btn {
+            width: 44px; height: 44px; border-radius: 14px;
+            background: linear-gradient(135deg, rgba(197,168,128,0.2), rgba(197,168,128,0.05));
+            border: 2px solid var(--accent-gold); display: flex; justify-content: center; align-items: center;
+            color: var(--accent-gold); font-size: 1.1rem; cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow-color); flex-shrink: 0;
+        }
+        .header-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+
+        /* ===================== SCREENS ===================== */
+        .main-content {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            scrollbar-width: none; position: relative;
+            display: flex; flex-direction: column;
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+        .screen { display: none; animation: fadeIn 0.3s ease; flex: 1; flex-direction: column; padding: 20px; }
+        .screen.active { display: flex; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ===================== COMMON ELEMENTS ===================== */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+            color: #fff; border: none; padding: 14px 24px; border-radius: 16px;
+            font-weight: 700; font-family: 'Cairo'; cursor: pointer; text-align: center;
+            font-size: 1rem; box-shadow: 0 6px 20px rgba(197,168,128,0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-secondary {
+            background: var(--card-bg); color: var(--accent-gold);
+            border: 1px solid var(--accent-gold); padding: 12px 20px; border-radius: 14px;
+            font-weight: 700; font-family: 'Cairo'; cursor: pointer; text-align: center; font-size: 0.95rem;
+        }
+        .input-field {
+            background: var(--input-bg); border: 1.5px solid var(--card-border);
+            border-radius: 14px; padding: 14px 16px; color: var(--text-main);
+            font-family: 'Tajawal'; font-size: 1rem; width: 100%; outline: none;
+            margin-bottom: 14px; transition: border-color 0.2s;
+        }
+        .input-field:focus { border-color: var(--accent-gold); }
+        .input-field::placeholder { color: var(--text-muted); }
+        .input-label { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 6px; display: block; }
+        .section-title { color: var(--text-main); font-size: 1.1rem; margin-bottom: 14px; font-weight: 700; }
+
+        /* ===================== SPLASH ===================== */
+        #screen-splash {
+            justify-content: center; align-items: center; text-align: center;
+            background: #0a1120;
+            position: absolute; inset: 0; z-index: 50; padding: 0;
+            flex-direction: column;
+        }
+        .splash-icon {
+            font-size: 5rem; color: #C5A880;
+            margin-bottom: 20px;
+        }
+        .splash-title {
+            font-size: 2.8rem; font-weight: 800;
+            color: #F0EAE0;
+            font-family: 'Cairo', sans-serif;
+            margin-bottom: 10px;
+        }
+        .splash-subtitle {
+            color: #94A3B8; font-size: 0.9rem;
+            margin-bottom: 44px;
+        }
+        .splash-spinner {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.08);
+            border-top-color: rgba(255,255,255,0.4);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===================== ONBOARDING ===================== */
+        #screen-onboarding {
+            position: absolute; inset: 0; z-index: 39;
+            background: var(--primary-bg); padding: 0; overflow: hidden;
+            flex-direction: column;
+        }
+        .onboard-skip {
+            position: absolute; top: 60px; left: 20px; z-index: 10;
+            color: var(--text-muted); font-size: 0.9rem; cursor: pointer;
+            padding: 6px 14px; border-radius: 20px; background: var(--card-bg);
+            border: 1px solid var(--card-border);
+        }
+        .onboard-slides-track {
+            display: flex; width: 300%; height: 100%;
+            transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+        }
+        .onboard-slide {
+            width: 33.333%; flex-shrink: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px 32px 160px; text-align: center;
+        }
+        .onboard-illustration {
+            width: 200px; height: 200px; border-radius: 40px; margin-bottom: 36px;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; flex-shrink: 0;
+        }
+        .ob-il-1 {
+            background: linear-gradient(135deg, rgba(197,168,128,0.15), rgba(197,168,128,0.03));
+            border: 1px solid rgba(197,168,128,0.2);
+        }
+        .ob-il-2 {
+            background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.03));
+            border: 1px solid rgba(59,130,246,0.2);
+        }
+        .ob-il-3 {
+            background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.03));
+            border: 1px solid rgba(34,197,94,0.2);
+        }
+        .onboard-illustration i { font-size: 5rem; }
+        .ob-il-1 i { color: var(--accent-gold); filter: drop-shadow(0 0 20px rgba(197,168,128,0.4)); }
+        .ob-il-2 i { color: #3b82f6; filter: drop-shadow(0 0 20px rgba(59,130,246,0.4)); }
+        .ob-il-3 i { color: var(--success); filter: drop-shadow(0 0 20px rgba(34,197,94,0.4)); }
+        /* floating chips around illustration */
+        .ob-chip {
+            position: absolute; background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 12px; padding: 6px 10px; font-size: 0.72rem; color: var(--text-muted);
+            white-space: nowrap; display: flex; align-items: center; gap: 5px;
+        }
+        .ob-chip-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .ob-chip.top-right { top: -10px; left: -30px; animation: chipFloat 3s ease-in-out infinite; }
+        .ob-chip.bottom-left { bottom: -10px; right: -30px; animation: chipFloat 3s ease-in-out infinite 1.5s; }
+        @keyframes chipFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+        .onboard-slide h2 { color: var(--text-main); font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; line-height: 1.3; }
+        .onboard-slide p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.7; max-width: 280px; }
+        /* Bottom controls */
+        .onboard-bottom {
+            position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 28px 40px;
+            background: linear-gradient(to top, var(--primary-bg) 70%, transparent);
+            display: flex; flex-direction: column; gap: 16px; align-items: center;
+        }
+        .onboard-dots { display: flex; gap: 8px; }
+        .onboard-dot {
+            height: 8px; border-radius: 4px; background: rgba(197,168,128,0.25);
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .onboard-dot.active { background: var(--accent-gold); width: 24px; }
+        .onboard-dot:not(.active) { width: 8px; }
+        .onboard-btn-row { display: flex; width: 100%; gap: 12px; }
+
+        /* ===================== FORGOT PASSWORD ===================== */
+        #screen-forgot {
+            position: absolute; inset: 0; z-index: 41;
+            background: var(--primary-bg); padding: 30px 28px;
+            flex-direction: column; justify-content: center; overflow-y: auto;
+        }
+        .forgot-icon {
+            width: 80px; height: 80px; border-radius: 24px; margin: 0 auto 24px;
+            background: rgba(197,168,128,0.1); border: 1.5px solid rgba(197,168,128,0.3);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 2rem; color: var(--accent-gold);
+        }
+
+        /* ===================== OTP ===================== */
+        #screen-otp {
+            position: absolute; inset: 0; z-index: 42;
+            background: var(--primary-bg); padding: 30px 28px;
+            flex-direction: column; justify-content: center; overflow-y: auto;
+        }
+        .otp-boxes { display: flex; gap: 10px; justify-content: center; margin: 28px 0; }
+        .otp-box {
+            width: 52px; height: 60px; border-radius: 14px;
+            border: 1.5px solid var(--card-border); background: var(--input-bg);
+            font-size: 1.6rem; font-weight: 800; color: var(--accent-gold);
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Cairo'; transition: border-color 0.2s;
+        }
+        .otp-box.filled { border-color: var(--accent-gold); background: rgba(197,168,128,0.08); }
+        .otp-box.active { border-color: var(--accent-gold); box-shadow: 0 0 0 3px rgba(197,168,128,0.15); }
+        .otp-resend { text-align: center; color: var(--text-muted); font-size: 0.88rem; margin-top: 16px; }
+        .otp-resend span { color: var(--accent-gold); font-weight: 700; cursor: pointer; }
+        .otp-timer { color: var(--accent-gold); font-weight: 700; font-family: 'Cairo'; }
+
+        /* ===================== TOAST ===================== */
+        .toast-container { position: absolute; bottom: 90px; left: 16px; right: 16px; z-index: 999; pointer-events: none; }
+        .toast {
+            background: #1e293b; border: 1px solid var(--card-border); border-radius: 14px;
+            padding: 12px 16px; margin-top: 8px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4); pointer-events: auto;
+            animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            transform-origin: bottom center;
+        }
+        .toast.hiding { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn { from{opacity:0;transform:scale(0.85) translateY(20px);} to{opacity:1;transform:scale(1) translateY(0);} }
+        @keyframes toastOut { from{opacity:1;transform:scale(1);} to{opacity:0;transform:scale(0.9) translateY(10px);} }
+        .toast-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; font-size: 0.9rem; }
+        .toast-success .toast-icon { background: rgba(34,197,94,0.15); color: var(--success); }
+        .toast-error .toast-icon { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .toast-info .toast-icon { background: rgba(197,168,128,0.15); color: var(--accent-gold); }
+        .toast p { color: var(--text-main); font-size: 0.88rem; font-weight: 600; flex: 1; }
+        .toast span { color: var(--text-muted); font-size: 0.78rem; }
+
+        /* ===================== LOGIN / REGISTER ===================== */
+        #screen-login, #screen-register {
+            justify-content: center; position: absolute; inset: 0; z-index: 40;
+            background: var(--primary-bg); overflow-y: auto; padding: 30px 28px;
+        }
+        .login-logo { text-align: center; margin-bottom: 32px; margin-top: 50px; }
+        .login-logo i { font-size: 3rem; color: var(--accent-gold); }
+        .login-logo h2 { color: var(--text-main); font-size: 1.9rem; margin-top: 10px; }
+        .login-logo p { color: var(--text-muted); font-size: 0.9rem; margin-top: 6px; }
+        .login-forgot { text-align: left; color: var(--accent-gold); font-size: 0.88rem; margin-bottom: 20px; cursor: pointer; }
+        .login-divider { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 18px 0; position: relative; }
+        .login-divider::before, .login-divider::after { content:''; position:absolute; top:50%; width:38%; height:1px; background:var(--card-border); }
+        .login-divider::before { right:0; } .login-divider::after { left:0; }
+        .social-btns { display: flex; gap: 12px; margin-bottom: 20px; }
+        .social-btn { flex:1; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:12px; color:var(--text-main); cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; font-size:0.9rem; }
+        .login-switch { text-align:center; color:var(--text-muted); margin-top:20px; font-size:0.9rem; }
+        .login-switch span { color:var(--accent-gold); font-weight:700; cursor:pointer; }
+
+        /* ===================== HOME ===================== */
+        .hero-card {
+            background: linear-gradient(135deg, rgba(197,168,128,0.18), rgba(197,168,128,0.04));
+            border: 1px solid rgba(197,168,128,0.5); border-radius: 24px;
+            padding: 22px; margin-bottom: 22px; position: relative; overflow: hidden;
+            cursor: pointer; box-shadow: 0 8px 30px rgba(197,168,128,0.1);
+        }
+        .hero-card::before { content:''; position:absolute; top:-40px; left:-40px; width:150px; height:150px; background:radial-gradient(circle, rgba(197,168,128,0.12) 0%, transparent 70%); }
+        .hero-card-icon { position:absolute; left:16px; bottom:10px; font-size:6rem; color:rgba(197,168,128,0.08); }
+        .hero-tag { background:var(--accent-gold); color:#fff; padding:4px 12px; border-radius:20px; font-size:0.72rem; font-weight:700; margin-bottom:10px; display:inline-block; }
+        .hero-card h3 { color:var(--text-main); font-size:1.3rem; margin-bottom:6px; position:relative; z-index:2; }
+        .hero-card p { color:var(--text-muted); font-size:0.85rem; margin-bottom:14px; position:relative; z-index:2; }
+        .hero-cta { color:var(--accent-gold); font-weight:700; font-family:'Cairo'; display:flex; align-items:center; gap:6px; font-size:0.95rem; position:relative; z-index:2; }
+
+        .features-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; }
+        .feature-card {
+            background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px;
+            padding:18px; text-align:center; cursor:pointer; transition:transform 0.2s, border-color 0.2s;
+        }
+        .feature-card:hover { transform:translateY(-2px); border-color:var(--accent-gold); }
+        .feature-icon { width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, rgba(197,168,128,0.2), transparent); color:var(--accent-gold); display:flex; justify-content:center; align-items:center; font-size:1.4rem; margin:0 auto 10px; }
+        .feature-card h4 { color:var(--text-main); font-size:0.95rem; margin-bottom:3px; }
+        .feature-card p { color:var(--text-muted); font-size:0.72rem; }
+
+        .quick-card {
+            background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px;
+            padding:16px 18px; display:flex; align-items:center; gap:14px;
+            cursor:pointer; margin-bottom:14px; transition:transform 0.2s;
+        }
+        .quick-card:hover { transform:translateX(-2px); }
+        .quick-card-icon { width:52px; height:52px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:1.4rem; flex-shrink:0; }
+        .quick-card-info { flex:1; }
+        .quick-card-info h4 { color:var(--text-main); font-size:1rem; margin-bottom:3px; }
+        .quick-card-info p { color:var(--text-muted); font-size:0.78rem; }
+        .progress-ring { width:60px; height:60px; border-radius:50%; background:conic-gradient(var(--accent-gold) 30%, var(--card-border) 0); display:flex; justify-content:center; align-items:center; flex-shrink:0; }
+        .progress-ring-inner { width:46px; height:46px; background:var(--primary-bg); border-radius:50%; display:flex; justify-content:center; align-items:center; color:var(--accent-gold); font-size:0.75rem; font-weight:700; font-family:'Cairo'; }
+
+        /* ===================== TRANSLATOR ===================== */
+        .avatar-container {
+            flex:1; min-height:230px; background:linear-gradient(160deg, #0d1b2e, #1a2540);
+            border-radius:24px; position:relative; overflow:hidden; margin-bottom:16px;
+            border:1px solid var(--card-border); display:flex; justify-content:center; align-items:center;
+        }
+        .avatar-badge { position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.6); padding:5px 12px; border-radius:12px; color:var(--accent-gold); font-size:0.75rem; border:1px solid rgba(197,168,128,0.3); }
+        .avatar-controls { position:absolute; bottom:12px; left:12px; display:flex; gap:8px; }
+        .avatar-btn { width:32px; height:32px; border-radius:10px; background:rgba(255,255,255,0.1); color:white; display:flex; justify-content:center; align-items:center; cursor:pointer; font-size:0.85rem; border:1px solid rgba(255,255,255,0.15); }
+        .input-area { background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:16px; }
+        .input-area textarea { width:100%; background:transparent; border:none; color:var(--text-main); font-family:'Tajawal'; font-size:1rem; resize:none; outline:none; min-height:70px; }
+        .input-actions { display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--card-border); padding-top:12px; margin-top:6px; }
+        .btn-icon { width:38px; height:38px; border-radius:50%; background:var(--input-bg); color:var(--text-muted); border:1px solid var(--card-border); display:flex; justify-content:center; align-items:center; cursor:pointer; }
+        .speed-selector { display:flex; gap:6px; margin-top:12px; }
+        .speed-btn { flex:1; padding:7px 0; border-radius:10px; border:1px solid var(--card-border); background:var(--input-bg); color:var(--text-muted); font-size:0.8rem; cursor:pointer; text-align:center; }
+        .speed-btn.active { background:rgba(197,168,128,0.15); border-color:var(--accent-gold); color:var(--accent-gold); font-weight:700; }
+
+        /* ===================== CAMERA ===================== */
+        .camera-container { flex:1; background:#000; border-radius:24px; position:relative; overflow:hidden; margin-bottom:16px; min-height:280px; }
+        .camera-overlay-border { position:absolute; inset:20px; border:2px dashed rgba(197,168,128,0.4); border-radius:16px; }
+        .camera-corner { position:absolute; width:20px; height:20px; border-color:var(--accent-gold); border-style:solid; }
+        .camera-corner.tl { top:20px; right:20px; border-width:3px 0 0 3px; border-radius:3px 0 0 0; }
+        .camera-corner.tr { top:20px; left:20px; border-width:3px 3px 0 0; border-radius:0 3px 0 0; }
+        .camera-corner.bl { bottom:20px; right:20px; border-width:0 0 3px 3px; border-radius:0 0 0 3px; }
+        .camera-corner.br { bottom:20px; left:20px; border-width:0 3px 3px 0; border-radius:0 0 3px 0; }
+        .camera-icon-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:3.5rem; color:rgba(255,255,255,0.15); }
+        .camera-status { position:absolute; top:14px; right:14px; background:rgba(0,0,0,0.65); padding:5px 12px; border-radius:20px; display:flex; align-items:center; gap:6px; font-size:0.78rem; color:var(--success); }
+        .camera-status::before { content:''; width:7px; height:7px; background:var(--success); border-radius:50%; box-shadow:0 0 8px var(--success); animation:blink 1.5s infinite; }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+        .translation-output { background:var(--card-bg); border:1px solid var(--accent-gold); border-radius:20px; padding:18px; text-align:center; }
+        .translation-output h3 { color:var(--accent-gold); margin-bottom:8px; font-size:0.9rem; }
+        .translation-output p { color:var(--text-main); font-size:1.4rem; font-weight:700; }
+        .translation-confidence { color:var(--text-muted); font-size:0.78rem; margin-top:6px; }
+
+        /* ===================== DICTIONARY ===================== */
+        .search-bar { background:var(--input-bg); border:1.5px solid var(--card-border); border-radius:14px; padding:11px 16px; display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+        .search-bar input { flex:1; background:transparent; border:none; color:var(--text-main); outline:none; font-family:'Tajawal'; font-size:0.95rem; }
+        .search-bar:focus-within { border-color:var(--accent-gold); }
+        .dict-cats { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; scrollbar-width:none; }
+        .dict-cats::-webkit-scrollbar { display:none; }
+        .cat-chip { padding:6px 14px; border-radius:20px; background:var(--card-bg); border:1px solid var(--card-border); color:var(--text-muted); font-size:0.8rem; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+        .cat-chip.active { background:rgba(197,168,128,0.15); border-color:var(--accent-gold); color:var(--accent-gold); font-weight:700; }
+        .dict-list { display:flex; flex-direction:column; gap:10px; flex:1; padding-bottom:10px; }
+        .dict-item { display:flex; align-items:center; gap:14px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:12px; cursor:pointer; transition:border-color 0.2s; }
+        .dict-item:hover { border-color:var(--accent-gold); }
+        .dict-thumb { width:54px; height:54px; background:rgba(197,168,128,0.1); border-radius:12px; display:flex; justify-content:center; align-items:center; color:var(--accent-gold); font-size:1.4rem; flex-shrink:0; }
+        .dict-info { flex:1; }
+        .dict-info h4 { color:var(--text-main); font-size:1.05rem; }
+        .dict-info p { color:var(--text-muted); font-size:0.78rem; margin-top:2px; }
+        .dict-tag { font-size:0.68rem; padding:2px 8px; border-radius:10px; background:rgba(197,168,128,0.1); color:var(--accent-gold); margin-top:4px; display:inline-block; }
+
+        /* ===================== LEARN ===================== */
+        .lesson-header { margin-bottom:18px; }
+        .lesson-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+        .lesson-meta h3 { color:var(--text-main); font-size:1.05rem; }
+        .lesson-meta span { color:var(--accent-gold); font-size:0.85rem; font-weight:700; }
+        .lesson-progress { width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden; }
+        .lesson-fill { height:100%; background:linear-gradient(90deg, var(--accent-gold-dark), var(--accent-gold)); border-radius:4px; transition:width 0.5s ease; }
+        .prompt-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:22px; text-align:center; margin-bottom:16px; }
+        .prompt-card p { color:var(--text-muted); margin-bottom:8px; font-size:0.9rem; }
+        .prompt-card h2 { color:var(--text-main); font-size:2rem; }
+        .lesson-camera { flex:1; min-height:170px; background:linear-gradient(160deg, #0d1b2e, #111827); border-radius:20px; margin-bottom:16px; display:flex; flex-direction:column; justify-content:center; align-items:center; border:2px dashed var(--card-border); color:var(--text-muted); gap:8px; cursor:pointer; transition:border-color 0.2s; }
+        .lesson-camera:hover { border-color:var(--accent-gold); color:var(--accent-gold); }
+        .lesson-result { background:rgba(34,197,94,0.08); border:1px solid var(--success); border-radius:16px; padding:14px; text-align:center; margin-bottom:14px; display:none; }
+        .lesson-result.show { display:block; }
+        .lesson-result i { color:var(--success); font-size:1.5rem; margin-bottom:6px; }
+        .lesson-result p { color:var(--success); font-weight:700; }
+        .lessons-list { display:flex; flex-direction:column; gap:10px; }
+        .lesson-row { display:flex; align-items:center; gap:14px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:14px; cursor:pointer; }
+        .lesson-num { width:40px; height:40px; border-radius:12px; background:rgba(197,168,128,0.1); color:var(--accent-gold); display:flex; justify-content:center; align-items:center; font-weight:700; font-size:1rem; flex-shrink:0; }
+        .lesson-row-info { flex:1; }
+        .lesson-row-info h4 { color:var(--text-main); font-size:0.95rem; }
+        .lesson-row-info p { color:var(--text-muted); font-size:0.78rem; }
+        .lesson-lock { color:var(--text-muted); }
+        .lesson-check { color:var(--success); }
+
+        /* ===================== HISTORY ===================== */
+        .history-filters { display:flex; gap:8px; margin-bottom:16px; }
+        .filter-chip { padding:7px 14px; border-radius:20px; background:var(--card-bg); border:1px solid var(--card-border); color:var(--text-muted); font-size:0.8rem; cursor:pointer; }
+        .filter-chip.active { background:rgba(197,168,128,0.15); border-color:var(--accent-gold); color:var(--accent-gold); font-weight:700; }
+        .history-date { color:var(--accent-gold); font-size:0.8rem; margin:14px 0 8px; font-weight:700; display:flex; align-items:center; gap:8px; }
+        .history-date::after { content:''; flex:1; height:1px; background:var(--card-border); }
+        .history-item { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color 0.2s; }
+        .history-item:hover { border-color:var(--accent-gold); }
+        .history-icon { width:40px; height:40px; border-radius:12px; display:flex; justify-content:center; align-items:center; font-size:1rem; flex-shrink:0; margin-left:12px; }
+        .history-text h4 { color:var(--text-main); margin-bottom:3px; font-size:0.95rem; }
+        .history-text p { color:var(--text-muted); font-size:0.75rem; }
+        .history-action { color:var(--accent-gold); width:36px; height:36px; border-radius:50%; background:rgba(197,168,128,0.1); display:flex; justify-content:center; align-items:center; }
+
+        /* ===================== SETTINGS ===================== */
+        .profile-header { text-align:center; margin-bottom:24px; padding-top:4px; }
+        .profile-avatar-wrap { position:relative; width:90px; margin:0 auto 14px; }
+        .profile-avatar { width:90px; height:90px; border-radius:26px; background:linear-gradient(135deg, rgba(197,168,128,0.2), rgba(197,168,128,0.05)); border:2.5px solid var(--accent-gold); display:flex; justify-content:center; align-items:center; font-size:2.5rem; color:var(--accent-gold); }
+        .profile-edit-btn { position:absolute; bottom:-6px; left:-6px; width:28px; height:28px; background:var(--accent-gold); border-radius:8px; display:flex; justify-content:center; align-items:center; color:#fff; font-size:0.7rem; cursor:pointer; }
+        .profile-header h3 { color:var(--text-main); font-size:1.3rem; }
+        .profile-header p { color:var(--text-muted); font-size:0.85rem; margin-top:2px; }
+        .profile-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:20px; padding:4px 12px; color:var(--success); font-size:0.75rem; margin-top:8px; }
+
+        .settings-group { margin-bottom:20px; }
+        .settings-group-title { color:var(--text-muted); font-size:0.78rem; margin-bottom:10px; padding-right:4px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+        .settings-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; overflow:hidden; }
+        .setting-item { padding:14px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); cursor:pointer; transition:background 0.15s; }
+        .setting-item:last-child { border-bottom:none; }
+        .setting-item:hover { background:rgba(197,168,128,0.05); }
+        .setting-left { display:flex; align-items:center; gap:13px; color:var(--text-main); font-weight:600; font-size:0.95rem; }
+        .setting-icon { width:34px; height:34px; border-radius:10px; display:flex; justify-content:center; align-items:center; font-size:0.9rem; }
+        .si-gold { background:rgba(197,168,128,0.12); color:var(--accent-gold); }
+        .si-blue { background:rgba(59,130,246,0.12); color:#3b82f6; }
+        .si-green { background:rgba(34,197,94,0.12); color:var(--success); }
+        .si-red { background:rgba(239,68,68,0.12); color:var(--danger); }
+        .si-purple { background:rgba(168,85,247,0.12); color:#a855f7; }
+        .setting-right { color:var(--text-muted); display:flex; align-items:center; gap:8px; font-size:0.85rem; }
+        .switch { position:relative; display:inline-block; width:44px; height:24px; }
+        .switch input { opacity:0; width:0; height:0; }
+        .slider { position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,0.15); transition:.3s; border-radius:34px; }
+        [data-theme="light"] .slider { background:rgba(0,0,0,0.15); }
+        .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:#fff; transition:.3s; border-radius:50%; }
+        input:checked + .slider { background:var(--accent-gold); }
+        input:checked + .slider:before { transform:translateX(20px); }
+        .btn-logout { width:100%; background:transparent; border:1.5px solid var(--danger); color:var(--danger); padding:14px; border-radius:16px; font-weight:700; font-family:'Cairo'; cursor:pointer; margin-top:8px; transition:background 0.2s; }
+        .btn-logout:hover { background:rgba(239,68,68,0.08); }
+
+        /* ===================== EDIT PROFILE ===================== */
+        .avatar-upload { text-align:center; margin-bottom:24px; }
+        .avatar-upload-img { width:88px; height:88px; border-radius:24px; background:linear-gradient(135deg, rgba(197,168,128,0.2), rgba(197,168,128,0.05)); border:2px dashed var(--accent-gold); display:flex; flex-direction:column; justify-content:center; align-items:center; color:var(--accent-gold); margin:0 auto 10px; cursor:pointer; }
+        .avatar-upload p { color:var(--text-muted); font-size:0.82rem; }
+        .form-row { display:flex; gap:10px; }
+        .form-row .input-field { flex:1; }
+        .input-group { margin-bottom:2px; }
+        .char-count { text-align:left; color:var(--text-muted); font-size:0.75rem; margin-top:-10px; margin-bottom:12px; }
+
+        /* ===================== PRIVACY & SECURITY ===================== */
+        .security-score { background:linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.04)); border:1px solid rgba(34,197,94,0.3); border-radius:20px; padding:18px; margin-bottom:20px; display:flex; align-items:center; gap:16px; }
+        .score-ring { width:60px; height:60px; border-radius:50%; background:conic-gradient(var(--success) 80%, rgba(34,197,94,0.15) 0); display:flex; justify-content:center; align-items:center; flex-shrink:0; }
+        .score-ring-inner { width:46px; height:46px; background:var(--primary-bg); border-radius:50%; display:flex; justify-content:center; align-items:center; color:var(--success); font-weight:800; font-size:1rem; font-family:'Cairo'; }
+        .score-info h4 { color:var(--text-main); font-size:1rem; margin-bottom:3px; }
+        .score-info p { color:var(--text-muted); font-size:0.8rem; }
+        .two-factor-card { background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.03)); border:1px solid rgba(59,130,246,0.3); border-radius:18px; padding:16px; margin-bottom:20px; display:flex; align-items:center; gap:14px; }
+        .two-factor-card i { font-size:1.8rem; color:#3b82f6; }
+        .two-factor-card h4 { color:var(--text-main); font-size:0.95rem; }
+        .two-factor-card p { color:var(--text-muted); font-size:0.8rem; }
+
+        /* ===================== NOTIFICATIONS ===================== */
+        .notif-preview { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:14px; margin-bottom:20px; display:flex; gap:12px; align-items:flex-start; }
+        .notif-preview-icon { width:40px; height:40px; border-radius:12px; background:rgba(197,168,128,0.12); color:var(--accent-gold); display:flex; justify-content:center; align-items:center; flex-shrink:0; }
+        .notif-preview h4 { color:var(--text-main); font-size:0.9rem; }
+        .notif-preview p { color:var(--text-muted); font-size:0.78rem; margin-top:2px; }
+
+        /* ===================== LANGUAGE ===================== */
+        .lang-option { display:flex; align-items:center; gap:14px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:14px 18px; margin-bottom:10px; cursor:pointer; transition:border-color 0.2s; }
+        .lang-option.selected { border-color:var(--accent-gold); background:rgba(197,168,128,0.05); }
+        .lang-flag { font-size:1.6rem; }
+        .lang-info { flex:1; }
+        .lang-info h4 { color:var(--text-main); font-size:0.95rem; }
+        .lang-info p { color:var(--text-muted); font-size:0.78rem; }
+        .lang-check { color:var(--accent-gold); font-size:1rem; }
+
+        /* ===================== HELP ===================== */
+        .faq-item { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; margin-bottom:10px; overflow:hidden; }
+        .faq-q { padding:14px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; color:var(--text-main); font-size:0.92rem; font-weight:600; }
+        .faq-a { padding:0 18px 14px; color:var(--text-muted); font-size:0.85rem; line-height:1.6; display:none; }
+        .faq-item.open .faq-a { display:block; }
+        .faq-item.open .faq-q i { transform:rotate(90deg); }
+        .faq-q i { transition:transform 0.2s; color:var(--text-muted); }
+        .contact-card { background:linear-gradient(135deg, rgba(197,168,128,0.1), rgba(197,168,128,0.02)); border:1px solid var(--card-border); border-radius:20px; padding:18px; text-align:center; margin-bottom:14px; }
+        .contact-card i { font-size:1.8rem; color:var(--accent-gold); margin-bottom:8px; }
+        .contact-card h4 { color:var(--text-main); font-size:0.95rem; margin-bottom:4px; }
+        .contact-card p { color:var(--text-muted); font-size:0.8rem; }
+
+        /* ===================== ABOUT ===================== */
+        .about-logo { text-align:center; padding:20px 0 24px; }
+        .about-logo i { font-size:3.5rem; color:var(--accent-gold); }
+        .about-logo h2 { color:var(--text-main); font-size:2rem; margin-top:10px; }
+        .about-logo p { color:var(--text-muted); font-size:0.85rem; }
+        .version-badge { display:inline-block; background:rgba(197,168,128,0.1); border:1px solid var(--accent-gold); color:var(--accent-gold); padding:4px 14px; border-radius:20px; font-size:0.8rem; margin-top:8px; }
+        .about-stat { display:flex; justify-content:space-around; background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:18px; margin-bottom:20px; }
+        .stat-item { text-align:center; }
+        .stat-item h3 { color:var(--accent-gold); font-size:1.4rem; }
+        .stat-item p { color:var(--text-muted); font-size:0.75rem; margin-top:2px; }
+        .team-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--card-border); }
+        .team-row:last-child { border-bottom:none; }
+        .team-avatar { width:40px; height:40px; border-radius:12px; background:rgba(197,168,128,0.12); color:var(--accent-gold); display:flex; justify-content:center; align-items:center; font-size:1rem; }
+        .team-info h4 { color:var(--text-main); font-size:0.9rem; }
+        .team-info p { color:var(--text-muted); font-size:0.75rem; }
+
+        /* ===================== STORAGE ===================== */
+        .storage-visual { background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:20px; margin-bottom:20px; }
+        .storage-bar-bg { height:10px; background:var(--input-bg); border-radius:5px; margin:14px 0 10px; overflow:hidden; }
+        .storage-bar-fill { height:100%; border-radius:5px; background:linear-gradient(90deg, var(--accent-gold-dark), var(--accent-gold)); }
+        .storage-legend { display:flex; gap:14px; flex-wrap:wrap; }
+        .legend-item { display:flex; align-items:center; gap:5px; font-size:0.78rem; color:var(--text-muted); }
+        .legend-dot { width:8px; height:8px; border-radius:50%; }
+        .storage-items { display:flex; flex-direction:column; gap:10px; }
+        .storage-item { display:flex; align-items:center; gap:12px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px; padding:12px 16px; }
+        .storage-item-icon { width:38px; height:38px; border-radius:11px; display:flex; justify-content:center; align-items:center; font-size:1rem; flex-shrink:0; }
+        .storage-item-info { flex:1; }
+        .storage-item-info h4 { color:var(--text-main); font-size:0.9rem; }
+        .storage-item-info p { color:var(--text-muted); font-size:0.75rem; }
+        .storage-item-size { color:var(--text-muted); font-size:0.82rem; }
+
+        /* ===================== VIDEO CALL ===================== */
+        .videocall-container { position:absolute; inset:0; background:#000; z-index:60; display:none; flex-direction:column; overflow:hidden; border-radius:44px; }
+        .videocall-main { flex:1; background:url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800') center/cover; position:relative; }
+        .videocall-overlay-small { position:absolute; bottom:100px; left:20px; width:90px; height:130px; border-radius:14px; border:2px solid var(--accent-gold); background:url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=300') center/cover; box-shadow:0 4px 15px rgba(0,0,0,0.5); }
+        .videocall-header { position:absolute; top:50px; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:0 20px; z-index:10; }
+        .videocall-header i { color:#fff; font-size:1.4rem; cursor:pointer; width:40px; height:40px; background:rgba(0,0,0,0.3); border-radius:12px; display:flex; justify-content:center; align-items:center; }
+        .videocall-name { color:#fff; text-align:center; text-shadow:0 2px 6px rgba(0,0,0,0.6); }
+        .videocall-name h3 { font-size:1.15rem; }
+        .videocall-name p { font-size:0.85rem; opacity:0.85; }
+        .videocall-translation { position:absolute; top:130px; left:16px; right:16px; background:rgba(0,0,0,0.65); backdrop-filter:blur(8px); border-radius:16px; padding:14px; text-align:center; border:1px solid rgba(197,168,128,0.4); }
+        .videocall-translation span { color:rgba(255,255,255,0.7); font-size:0.75rem; }
+        .videocall-translation p { color:#fff; font-size:1.1rem; font-weight:700; margin-top:4px; }
+        .videocall-controls { position:absolute; bottom:24px; left:0; right:0; display:flex; justify-content:center; gap:16px; z-index:10; }
+        .call-btn { width:54px; height:54px; border-radius:50%; background:rgba(255,255,255,0.18); backdrop-filter:blur(10px); color:#fff; font-size:1.1rem; display:flex; justify-content:center; align-items:center; cursor:pointer; border:1px solid rgba(255,255,255,0.2); }
+        .call-btn.end-call { background:var(--danger); border-color:var(--danger); }
+
+        /* ===================== BOTTOM NAV ===================== */
+        .bottom-nav { background:var(--nav-bg); backdrop-filter:blur(20px); border-top:1px solid var(--card-border); padding:12px 24px 28px; display:flex; justify-content:space-between; align-items:center; z-index:10; }
+        .nav-item { color:var(--text-muted); display:flex; flex-direction:column; align-items:center; gap:4px; font-size:0.7rem; cursor:pointer; padding:4px 8px; border-radius:12px; transition:all 0.2s; }
+        .nav-item.active { color:var(--accent-gold); }
+        .nav-item i { font-size:1.25rem; }
+        .nav-dot { width:4px; height:4px; background:var(--accent-gold); border-radius:50%; margin-top:2px; display:none; }
+        .nav-item.active .nav-dot { display:block; }
+    </style>
+</head>
+<body data-theme="dark">
+
+<div class="phone-mockup">
+    <div class="notch"></div>
+    <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="status-icons">
+            <i class="fa-solid fa-signal" style="font-size:0.7rem;"></i>
+            <i class="fa-solid fa-wifi" style="font-size:0.7rem;"></i>
+            <i class="fa-solid fa-battery-full" style="font-size:0.7rem;"></i>
+        </div>
+    </div>
+
+    <!-- ===== SPLASH ===== -->
+    <div id="screen-splash" class="screen active" style="padding:0;">
+        <i class="fa-solid fa-hands-asl-interpreting splash-icon"></i>
+        <h1 class="splash-title">إشـارة</h1>
+        <p class="splash-subtitle">تواصل بلا حدود</p>
+        <div class="splash-spinner"></div>
+    </div>
+
+    <!-- ===== ONBOARDING ===== -->
+    <div id="screen-onboarding" class="screen" style="padding:0;">
+        <span class="onboard-skip" onclick="skipOnboarding()">تخطي</span>
+        <div class="onboard-slides-track" id="onboardTrack">
+            <!-- Slide 1 -->
+            <div class="onboard-slide">
+                <div class="onboard-illustration ob-il-1">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+                <h2>ترجمة فورية<br>بالكاميرا</h2>
+                <p>وجّه كاميرا هاتفك نحو يديك وسيحوّل الذكاء الاصطناعي إشاراتك إلى نص فوري بدقة عالية.</p>
+            </div>
+            <!-- Slide 2 -->
+            <div class="onboard-slide">
+                <div class="onboard-illustration ob-il-2">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2>تعلّم لغة<br>الإشارة</h2>
+                <p>دروس تفاعلية مصمّمة بعناية تُرشدك خطوة بخطوة من المبتدئ إلى المحترف مع تقييم فوري.</p>
+            </div>
+            <!-- Slide 3 -->
+            <div class="onboard-slide">
+                <div class="onboard-illustration ob-il-3">
+                    <i class="fa-solid fa-video"></i>
+                </div>
+                <h2>تواصل<br>بلا حدود</h2>
+                <p>مكالمات فيديو مع ترجمة حية للإشارة — تواصل مع الأطباء وخدمات الطوارئ بكل سهولة.</p>
+            </div>
+        </div>
+        <div class="onboard-bottom">
+            <div class="onboard-dots">
+                <span class="onboard-dot active" onclick="goToSlide(0)"></span>
+                <span class="onboard-dot" onclick="goToSlide(1)"></span>
+                <span class="onboard-dot" onclick="goToSlide(2)"></span>
+            </div>
+            <div class="onboard-btn-row">
+                <button class="btn-secondary" id="onboardPrevBtn" onclick="prevSlide()" style="display:none; flex:1;">السابق</button>
+                <button class="btn-primary" id="onboardNextBtn" onclick="nextSlide()" style="flex:1;">التالي</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FORGOT PASSWORD ===== -->
+    <div id="screen-forgot" class="screen" style="display:none;">
+        <div style="text-align:center; margin-bottom:32px; margin-top:40px;">
+            <div class="forgot-icon"><i class="fa-solid fa-lock-open"></i></div>
+            <h2 style="color:var(--text-main); font-size:1.7rem; margin-bottom:8px;">نسيت كلمة المرور؟</h2>
+            <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">أدخل بريدك الإلكتروني وسنرسل لك رمز التحقق لإعادة تعيين كلمة المرور.</p>
+        </div>
+        <label class="input-label">البريد الإلكتروني</label>
+        <input type="email" class="input-field" placeholder="ahmed@example.com">
+        <button class="btn-primary" style="width:100%; margin-top:4px;" onclick="navigate('otp')">إرسال رمز التحقق</button>
+        <button class="btn-secondary" style="width:100%; margin-top:12px;" onclick="navigateAuth('login')">العودة لتسجيل الدخول</button>
+    </div>
+
+    <!-- ===== OTP VERIFICATION ===== -->
+    <div id="screen-otp" class="screen" style="display:none;">
+        <div style="text-align:center; margin-bottom:28px; margin-top:40px;">
+            <div class="forgot-icon" style="background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.3);">
+                <i class="fa-solid fa-shield-halved" style="color:var(--success);"></i>
+            </div>
+            <h2 style="color:var(--text-main); font-size:1.7rem; margin-bottom:8px;">التحقق من الهوية</h2>
+            <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">أدخل الرمز المكون من 4 أرقام الذي أرسلناه إلى<br><strong style="color:var(--text-main);">ahmed@example.com</strong></p>
+        </div>
+        <div class="otp-boxes">
+            <div class="otp-box filled">7</div>
+            <div class="otp-box filled">4</div>
+            <div class="otp-box active"></div>
+            <div class="otp-box"></div>
+        </div>
+        <button class="btn-primary" style="width:100%;" onclick="navigate('home'); showToast('success','تم التحقق بنجاح!','مرحباً بعودتك')">تأكيد الرمز</button>
+        <div class="otp-resend">لم تصلك الرسالة؟ <span onclick="showToast('info','تم إرسال رمز جديد','راجع بريدك الإلكتروني')">إعادة الإرسال</span> <span class="otp-timer" id="otpTimer">(59)</span></div>
+        <button class="btn-secondary" style="width:100%; margin-top:16px;" onclick="navigateAuth('forgot')">تغيير البريد الإلكتروني</button>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ===== LOGIN ===== -->
+    <div id="screen-login" class="screen" style="padding:30px 28px;">
+        <div class="login-logo">
+            <i class="fa-solid fa-hands-asl-interpreting"></i>
+            <h2>أهلاً بك</h2>
+            <p>سجّل دخولك للمتابعة</p>
+        </div>
+        <input type="email" class="input-field" placeholder="البريد الإلكتروني" value="ahmed@example.com">
+        <input type="password" class="input-field" placeholder="كلمة المرور" value="••••••••">
+        <p class="login-forgot" onclick="navigateAuth('forgot')">نسيت كلمة المرور؟</p>
+        <button class="btn-primary" style="width:100%" onclick="navigate('home'); showToast('success','أهلاً بك مجدداً!','تسجيل الدخول ناجح')">دخول</button>
+        <div class="login-divider">أو تابع بواسطة</div>
+        <div class="social-btns">
+            <div class="social-btn"><i class="fab fa-google" style="color:#ea4335;"></i> Google</div>
+            <div class="social-btn"><i class="fab fa-apple"></i> Apple</div>
+        </div>
+        <p class="login-switch">ليس لديك حساب؟ <span onclick="navigateAuth('register')">سجّل الآن</span></p>
+    </div>
+
+    <!-- ===== REGISTER ===== -->
+    <div id="screen-register" class="screen" style="padding:30px 28px; overflow-y:auto;">
+        <div class="login-logo" style="margin-top:30px; margin-bottom:24px;">
+            <i class="fa-solid fa-hands-asl-interpreting"></i>
+            <h2>إنشاء حساب</h2>
+            <p>انضم إلى مجتمع إشارة</p>
+        </div>
+        <div class="form-row">
+            <input type="text" class="input-field" placeholder="الاسم الأول" value="أحمد">
+            <input type="text" class="input-field" placeholder="الاسم الأخير" value="محمود">
+        </div>
+        <input type="email" class="input-field" placeholder="البريد الإلكتروني">
+        <input type="tel" class="input-field" placeholder="رقم الهاتف">
+        <input type="password" class="input-field" placeholder="كلمة المرور">
+        <input type="password" class="input-field" placeholder="تأكيد كلمة المرور">
+        <button class="btn-primary" style="width:100%; margin-top:4px;" onclick="navigate('home')">إنشاء الحساب</button>
+        <p class="login-switch" style="margin-top:16px;">لديك حساب بالفعل؟ <span onclick="navigate('login')">سجل الدخول</span></p>
+    </div>
+
+    <!-- ===== APP HEADER ===== -->
+    <header class="app-header" id="mainHeader" style="display:none;">
+        <div class="header-back" id="backBtn" onclick="goBack()">
+            <i class="fa-solid fa-arrow-right"></i>
+        </div>
+        <div class="user-greeting" id="greetingContainer">
+            <p>مرحباً بك،</p>
+            <h2>أحمد محمود</h2>
+        </div>
+        <div class="header-title" id="titleContainer">
+            <h2 id="pageTitle"></h2>
+        </div>
+        <div class="header-actions">
+            <div class="profile-btn" id="profileBtn" onclick="navigate('settings')">
+                <i class="fa-solid fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content" id="mainContent" style="display:none;">
+
+        <!-- HOME -->
+        <div id="screen-home" class="screen">
+            <div class="hero-card" onclick="startVideoCall()">
+                <i class="fa-solid fa-video hero-card-icon"></i>
+                <span class="hero-tag">مباشر الآن</span>
+                <h3>مكالمة فيديو مترجمة</h3>
+                <p>تواصل فورياً مع طبيب أو خدمات الطوارئ بدعم الترجمة الحية.</p>
+                <div class="hero-cta">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></div>
+            </div>
+
+            <h3 class="section-title">الخدمات الأساسية</h3>
+            <div class="features-grid">
+                <div class="feature-card" onclick="navigate('camera')">
+                    <div class="feature-icon"><i class="fa-solid fa-camera"></i></div>
+                    <h4>الترجمة الحية</h4><p>إشارة إلى نص فوري</p>
+                </div>
+                <div class="feature-card" onclick="navigate('translator')">
+                    <div class="feature-icon"><i class="fa-solid fa-person-chalkboard"></i></div>
+                    <h4>المترجم الآلي</h4><p>نص إلى إشارة</p>
+                </div>
+                <div class="feature-card" onclick="navigate('dictionary')">
+                    <div class="feature-icon"><i class="fa-solid fa-book-open"></i></div>
+                    <h4>القاموس الإشاري</h4><p>مكتبة الإشارات</p>
+                </div>
+                <div class="feature-card" onclick="navigate('history')">
+                    <div class="feature-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <h4>سجل الترجمات</h4><p>محادثاتك السابقة</p>
+                </div>
+            </div>
+
+            <h3 class="section-title">تطوير المهارات</h3>
+            <div class="quick-card" onclick="navigate('learn')">
+                <div class="progress-ring">
+                    <div class="progress-ring-inner">30%</div>
+                </div>
+                <div class="quick-card-info">
+                    <h4>تعلم لغة الإشارة</h4>
+                    <p>أكملت الدرس 3 من 10 • الأساسيات</p>
+                </div>
+                <i class="fa-solid fa-chevron-left" style="color:var(--accent-gold);"></i>
+            </div>
+        </div>
+
+        <!-- TRANSLATOR -->
+        <div id="screen-translator" class="screen">
+            <div class="avatar-container">
+                <i class="fa-solid fa-user-astronaut" style="font-size:7rem; color:#334155;"></i>
+                <div class="avatar-badge">Avatar 3D • وضع الإشارة</div>
+                <div class="avatar-controls">
+                    <div class="avatar-btn"><i class="fa-solid fa-expand"></i></div>
+                    <div class="avatar-btn"><i class="fa-solid fa-rotate"></i></div>
+                </div>
+            </div>
+            <div class="speed-selector" style="margin-bottom:12px;">
+                <div class="speed-btn active">بطيء</div>
+                <div class="speed-btn">عادي</div>
+                <div class="speed-btn">سريع</div>
+            </div>
+            <div class="input-area">
+                <textarea placeholder="اكتب النص هنا لتحويله إلى لغة الإشارة...">مرحباً، كيف يمكنني مساعدتك؟</textarea>
+                <div class="input-actions">
+                    <div style="display:flex; gap:8px;">
+                        <div class="btn-icon"><i class="fa-solid fa-microphone"></i></div>
+                        <div class="btn-icon"><i class="fa-solid fa-paste"></i></div>
+                    </div>
+                    <button class="btn-primary" style="padding:9px 20px; font-size:0.9rem;">ترجم الآن</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CAMERA -->
+        <div id="screen-camera" class="screen">
+            <div class="camera-container">
+                <div class="camera-corner tl"></div>
+                <div class="camera-corner tr"></div>
+                <div class="camera-corner bl"></div>
+                <div class="camera-corner br"></div>
+                <i class="fa-solid fa-video camera-icon-center"></i>
+                <div class="camera-status">جاري التحليل...</div>
+            </div>
+            <div class="translation-output">
+                <h3><i class="fa-solid fa-waveform-lines"></i> الكلام المُترجم:</h3>
+                <p>مرحباً، كيف حالك؟</p>
+                <p class="translation-confidence">دقة التعرف: 94%</p>
+            </div>
+        </div>
+
+        <!-- DICTIONARY -->
+        <div id="screen-dictionary" class="screen">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);"></i>
+                <input type="text" placeholder="ابحث عن إشارة...">
+            </div>
+            <div class="dict-cats">
+                <div class="cat-chip active">الكل</div>
+                <div class="cat-chip">تحيات</div>
+                <div class="cat-chip">أرقام</div>
+                <div class="cat-chip">حروف</div>
+                <div class="cat-chip">مشاعر</div>
+                <div class="cat-chip">طوارئ</div>
+            </div>
+            <div class="dict-list">
+                <div class="dict-item"><div class="dict-thumb"><i class="fa-solid fa-hand"></i></div><div class="dict-info"><h4>مرحباً</h4><p>تحية أساسية</p><span class="dict-tag">تحيات</span></div><i class="fa-solid fa-play" style="color:var(--accent-gold);"></i></div>
+                <div class="dict-item"><div class="dict-thumb"><i class="fa-solid fa-handshake"></i></div><div class="dict-info"><h4>شكراً</h4><p>امتنان وتقدير</p><span class="dict-tag">تحيات</span></div><i class="fa-solid fa-play" style="color:var(--accent-gold);"></i></div>
+                <div class="dict-item"><div class="dict-thumb"><i class="fa-solid fa-heart"></i></div><div class="dict-info"><h4>أحبك</h4><p>تعبير عاطفي</p><span class="dict-tag">مشاعر</span></div><i class="fa-solid fa-play" style="color:var(--accent-gold);"></i></div>
+                <div class="dict-item"><div class="dict-thumb"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="dict-info"><h4>نجدة</h4><p>طلب مساعدة عاجلة</p><span class="dict-tag">طوارئ</span></div><i class="fa-solid fa-play" style="color:var(--accent-gold);"></i></div>
+                <div class="dict-item"><div class="dict-thumb"><i class="fa-solid fa-house-medical"></i></div><div class="dict-info"><h4>مستشفى</h4><p>مكان العلاج الطبي</p><span class="dict-tag">طوارئ</span></div><i class="fa-solid fa-play" style="color:var(--accent-gold);"></i></div>
+            </div>
+        </div>
+
+        <!-- LEARN -->
+        <div id="screen-learn" class="screen">
+            <div class="lesson-header">
+                <div class="lesson-meta">
+                    <h3>الأساسيات — الدرس 3</h3>
+                    <span>3 / 10</span>
+                </div>
+                <div class="lesson-progress"><div class="lesson-fill" style="width:30%;"></div></div>
+            </div>
+            <div class="prompt-card">
+                <p>قم بعمل إشارة الكلمة:</p>
+                <h2>" شُـكـراً "</h2>
+            </div>
+            <div class="lesson-camera" onclick="checkLesson()">
+                <i class="fa-solid fa-camera" style="font-size:2rem;"></i>
+                <p style="font-size:0.9rem;">اضغط لفتح الكاميرا والتطبيق</p>
+            </div>
+            <div class="lesson-result" id="lessonResult">
+                <i class="fa-solid fa-circle-check"></i>
+                <p>أحسنت! إشارة صحيحة 🎉</p>
+            </div>
+            <button class="btn-primary" onclick="checkLesson()">تحقق من إجابتي</button>
+
+            <div style="height:20px;"></div>
+            <h3 class="section-title">كل الدروس</h3>
+            <div class="lessons-list">
+                <div class="lesson-row"><div class="lesson-num">1</div><div class="lesson-row-info"><h4>الحروف الهجائية</h4><p>تعلم حروف الإشارة</p></div><i class="fa-solid fa-circle-check lesson-check"></i></div>
+                <div class="lesson-row"><div class="lesson-num">2</div><div class="lesson-row-info"><h4>التحيات الأساسية</h4><p>مرحبا، شكرا، مع السلامة</p></div><i class="fa-solid fa-circle-check lesson-check"></i></div>
+                <div class="lesson-row" style="border:1px solid var(--accent-gold); border-radius:16px; padding:14px; background:rgba(197,168,128,0.05);"><div class="lesson-num" style="border:2px solid var(--accent-gold);">3</div><div class="lesson-row-info"><h4>المشاعر والأحاسيس</h4><p>سعيد، حزين، خائف...</p></div><i class="fa-solid fa-circle-play" style="color:var(--accent-gold);"></i></div>
+                <div class="lesson-row"><div class="lesson-num" style="opacity:0.4;">4</div><div class="lesson-row-info" style="opacity:0.4;"><h4>الأرقام والأعداد</h4><p>من 1 إلى 100</p></div><i class="fa-solid fa-lock lesson-lock"></i></div>
+                <div class="lesson-row"><div class="lesson-num" style="opacity:0.4;">5</div><div class="lesson-row-info" style="opacity:0.4;"><h4>الأسرة والعلاقات</h4><p>أب، أم، أخ، أخت...</p></div><i class="fa-solid fa-lock lesson-lock"></i></div>
+            </div>
+            <div style="height:16px;"></div>
+        </div>
+
+        <!-- HISTORY -->
+        <div id="screen-history" class="screen">
+            <div class="search-bar"><i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);"></i><input type="text" placeholder="البحث في السجل..."></div>
+            <div class="history-filters">
+                <div class="filter-chip active">الكل</div>
+                <div class="filter-chip">لنص</div>
+                <div class="filter-chip">لإشارة</div>
+                <div class="filter-chip">كاميرا</div>
+            </div>
+            <div class="history-date">اليوم</div>
+            <div class="history-item">
+                <div class="history-icon si-blue"><i class="fa-solid fa-camera"></i></div>
+                <div class="history-text"><h4>الذهاب للمستشفى</h4><p>12:45 م • إشارة إلى نص</p></div>
+                <div class="history-action"><i class="fa-solid fa-play"></i></div>
+            </div>
+            <div class="history-item">
+                <div class="history-icon si-gold" style="background:rgba(197,168,128,0.1); color:var(--accent-gold);"><i class="fa-solid fa-person-chalkboard"></i></div>
+                <div class="history-text"><h4>السلام عليكم</h4><p>09:20 ص • نص إلى إشارة</p></div>
+                <div class="history-action"><i class="fa-solid fa-play"></i></div>
+            </div>
+            <div class="history-date">أمس</div>
+            <div class="history-item">
+                <div class="history-icon si-blue"><i class="fa-solid fa-camera"></i></div>
+                <div class="history-text"><h4>كم سعر هذا؟</h4><p>04:30 م • إشارة إلى نص</p></div>
+                <div class="history-action"><i class="fa-solid fa-play"></i></div>
+            </div>
+            <div class="history-item">
+                <div class="history-icon" style="background:rgba(34,197,94,0.1); color:var(--success);"><i class="fa-solid fa-video"></i></div>
+                <div class="history-text"><h4>مكالمة مع د. سارة</h4><p>02:10 م • مكالمة فيديو • 5 دقائق</p></div>
+                <div class="history-action"><i class="fa-solid fa-play"></i></div>
+            </div>
+            <div class="history-date">الأسبوع الماضي</div>
+            <div class="history-item">
+                <div class="history-icon si-gold" style="background:rgba(197,168,128,0.1); color:var(--accent-gold);"><i class="fa-solid fa-person-chalkboard"></i></div>
+                <div class="history-text"><h4>أريد طلب سيارة إسعاف</h4><p>السبت • نص إلى إشارة</p></div>
+                <div class="history-action"><i class="fa-solid fa-play"></i></div>
+            </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="screen-settings" class="screen">
+            <div class="profile-header">
+                <div class="profile-avatar-wrap">
+                    <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+                    <div class="profile-edit-btn" onclick="navigate('edit-profile')"><i class="fa-solid fa-pen"></i></div>
+                </div>
+                <h3>أحمد محمود</h3>
+                <p>ahmed@example.com</p>
+                <div class="profile-badge"><i class="fa-solid fa-circle-check"></i> حساب موثق</div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-group-title">التطبيق</div>
+                <div class="settings-card">
+                    <div class="setting-item" onclick="toggleTheme()">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-solid fa-moon"></i></div>الوضع المظلم</div>
+                        <div class="setting-right">
+                            <label class="switch" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="themeToggle" checked onchange="toggleTheme()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="setting-item" onclick="navigate('language')">
+                        <div class="setting-left"><div class="setting-icon si-blue"><i class="fa-solid fa-globe"></i></div>اللغة</div>
+                        <div class="setting-right">العربية <i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item" onclick="navigate('notifications')">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-solid fa-bell"></i></div>الإشعارات</div>
+                        <div class="setting-right">مفعّلة <i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-green"><i class="fa-solid fa-wifi"></i></div>وضع بدون إنترنت</div>
+                        <div class="setting-right">
+                            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-group-title">الحساب</div>
+                <div class="settings-card">
+                    <div class="setting-item" onclick="navigate('edit-profile')">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-solid fa-user-pen"></i></div>تعديل الملف الشخصي</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item" onclick="navigate('privacy')">
+                        <div class="setting-left"><div class="setting-icon si-blue"><i class="fa-solid fa-shield-halved"></i></div>الخصوصية والأمان</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item" onclick="navigate('storage')">
+                        <div class="setting-left"><div class="setting-icon si-purple"><i class="fa-solid fa-hard-drive"></i></div>التخزين والبيانات</div>
+                        <div class="setting-right">120 MB <i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-group-title">المساعدة</div>
+                <div class="settings-card">
+                    <div class="setting-item" onclick="navigate('help')">
+                        <div class="setting-left"><div class="setting-icon si-green"><i class="fa-solid fa-circle-question"></i></div>المساعدة والدعم</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item" onclick="navigate('about')">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-solid fa-circle-info"></i></div>حول التطبيق</div>
+                        <div class="setting-right">v2.1.0 <i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-logout" onclick="logout()">تسجيل الخروج &nbsp;<i class="fa-solid fa-right-from-bracket"></i></button>
+            <div style="height:20px;"></div>
+        </div>
+
+        <!-- EDIT PROFILE -->
+        <div id="screen-edit-profile" class="screen">
+            <div class="avatar-upload">
+                <div class="avatar-upload-img">
+                    <i class="fa-solid fa-camera" style="font-size:1.8rem; margin-bottom:6px;"></i>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">تغيير الصورة</span>
+                </div>
+                <p>JPG أو PNG • بحد أقصى 5MB</p>
+            </div>
+            <div class="form-row">
+                <div style="flex:1;">
+                    <label class="input-label">الاسم الأول</label>
+                    <input type="text" class="input-field" value="أحمد">
+                </div>
+                <div style="flex:1;">
+                    <label class="input-label">الاسم الأخير</label>
+                    <input type="text" class="input-field" value="محمود">
+                </div>
+            </div>
+            <label class="input-label">البريد الإلكتروني</label>
+            <input type="email" class="input-field" value="ahmed@example.com">
+            <label class="input-label">رقم الهاتف</label>
+            <input type="tel" class="input-field" value="+20 100 000 0000">
+            <label class="input-label">تاريخ الميلاد</label>
+            <input type="text" class="input-field" value="15 / 04 / 1995">
+            <label class="input-label">نبذة شخصية</label>
+            <textarea class="input-field" style="resize:none; min-height:80px;">مستخدم تطبيق إشارة منذ 2023</textarea>
+            <div class="char-count">72 / 150 حرف</div>
+            <label class="input-label">الجنس</label>
+            <div style="display:flex; gap:10px; margin-bottom:16px;">
+                <div style="flex:1; background:rgba(197,168,128,0.1); border:1.5px solid var(--accent-gold); border-radius:12px; padding:12px; text-align:center; color:var(--accent-gold); cursor:pointer; font-size:0.9rem;">ذكر</div>
+                <div style="flex:1; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:12px; text-align:center; color:var(--text-muted); cursor:pointer; font-size:0.9rem;">أنثى</div>
+            </div>
+            <button class="btn-primary" style="width:100%;">حفظ التغييرات</button>
+            <div style="height:20px;"></div>
+        </div>
+
+        <!-- PRIVACY & SECURITY -->
+        <div id="screen-privacy" class="screen">
+            <div class="security-score">
+                <div class="score-ring"><div class="score-ring-inner">80%</div></div>
+                <div class="score-info">
+                    <h4>مستوى الأمان: جيد</h4>
+                    <p>فعّل المصادقة الثنائية لرفع المستوى إلى ممتاز</p>
+                </div>
+            </div>
+
+            <div class="two-factor-card">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <div style="flex:1;">
+                    <h4>المصادقة الثنائية (2FA)</h4>
+                    <p>أضف طبقة أمان إضافية لحسابك</p>
+                </div>
+                <button class="btn-secondary" style="padding:8px 14px; font-size:0.8rem; flex-shrink:0;">تفعيل</button>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-group-title">الخصوصية</div>
+                <div class="settings-card">
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-blue"><i class="fa-solid fa-eye-slash"></i></div>إخفاء الملف الشخصي</div>
+                        <div class="setting-right"><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-solid fa-clock"></i></div>حفظ سجل الترجمة</div>
+                        <div class="setting-right"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-purple"><i class="fa-solid fa-chart-simple"></i></div>مشاركة بيانات الاستخدام</div>
+                        <div class="setting-right"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-green"><i class="fa-solid fa-location-dot"></i></div>الوصول للموقع</div>
+                        <div class="setting-right">أثناء الاستخدام <i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-group-title">الأمان</div>
+                <div class="settings-card">
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-solid fa-fingerprint"></i></div>فتح ببصمة الإصبع</div>
+                        <div class="setting-right"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-blue"><i class="fa-solid fa-key"></i></div>تغيير كلمة المرور</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-red"><i class="fa-solid fa-right-from-bracket"></i></div>تسجيل الخروج من كل الأجهزة</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-group-title">إدارة البيانات</div>
+                <div class="settings-card">
+                    <div class="setting-item" style="color:var(--danger);">
+                        <div class="setting-left"><div class="setting-icon si-red"><i class="fa-solid fa-trash-can"></i></div><span style="color:var(--danger);">حذف جميع البيانات</span></div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left" style="color:var(--danger);"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div style="height:16px;"></div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div id="screen-notifications" class="screen">
+            <div class="notif-preview">
+                <div class="notif-preview-icon"><i class="fa-solid fa-bell"></i></div>
+                <div>
+                    <h4>معاينة الإشعارات</h4>
+                    <p>كيف ستظهر الإشعارات على هاتفك</p>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">إشعارات التطبيق</div>
+                <div class="settings-card">
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-solid fa-bell"></i></div>تفعيل الإشعارات</div>
+                        <div class="setting-right"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-green"><i class="fa-solid fa-video"></i></div>إشعارات المكالمات</div>
+                        <div class="setting-right"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-blue"><i class="fa-solid fa-graduation-cap"></i></div>تذكير التعلم اليومي</div>
+                        <div class="setting-right"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-purple"><i class="fa-solid fa-star"></i></div>العروض والتحديثات</div>
+                        <div class="setting-right"><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">وقت التذكير اليومي</div>
+                <div class="settings-card">
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-regular fa-clock"></i></div>موعد التذكير</div>
+                        <div class="setting-right">08:00 ص <i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-blue"><i class="fa-solid fa-calendar-days"></i></div>أيام التذكير</div>
+                        <div class="setting-right">كل يوم <i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div style="height:16px;"></div>
+        </div>
+
+        <!-- LANGUAGE -->
+        <div id="screen-language" class="screen">
+            <div class="search-bar" style="margin-bottom:20px;">
+                <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);"></i>
+                <input type="text" placeholder="ابحث عن لغة...">
+            </div>
+            <h3 class="section-title" style="margin-bottom:12px;">اللغة الحالية</h3>
+            <div class="lang-option selected">
+                <span class="lang-flag">🇸🇦</span>
+                <div class="lang-info"><h4>العربية</h4><p>Arabic</p></div>
+                <i class="fa-solid fa-circle-check lang-check"></i>
+            </div>
+            <h3 class="section-title" style="margin:16px 0 12px;">لغات أخرى</h3>
+            <div class="lang-option"><span class="lang-flag">🇬🇧</span><div class="lang-info"><h4>الإنجليزية</h4><p>English</p></div></div>
+            <div class="lang-option"><span class="lang-flag">🇫🇷</span><div class="lang-info"><h4>الفرنسية</h4><p>Français</p></div></div>
+            <div class="lang-option"><span class="lang-flag">🇩🇪</span><div class="lang-info"><h4>الألمانية</h4><p>Deutsch</p></div></div>
+            <div class="lang-option"><span class="lang-flag">🇹🇷</span><div class="lang-info"><h4>التركية</h4><p>Türkçe</p></div></div>
+            <div style="height:16px;"></div>
+        </div>
+
+        <!-- STORAGE -->
+        <div id="screen-storage" class="screen">
+            <div class="storage-visual">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><h4 style="color:var(--text-main); font-size:1rem;">المساحة المستخدمة</h4><p style="color:var(--text-muted); font-size:0.82rem; margin-top:3px;">120 MB من 500 MB</p></div>
+                    <span style="color:var(--accent-gold); font-weight:800; font-size:1.2rem; font-family:'Cairo';">24%</span>
+                </div>
+                <div class="storage-bar-bg"><div class="storage-bar-fill" style="width:24%;"></div></div>
+                <div class="storage-legend">
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-gold);"></div>قاموس (80MB)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;"></div>سجل (25MB)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div>أخرى (15MB)</div>
+                </div>
+            </div>
+            <h3 class="section-title">تفاصيل التخزين</h3>
+            <div class="storage-items">
+                <div class="storage-item"><div class="storage-item-icon si-gold"><i class="fa-solid fa-book-open"></i></div><div class="storage-item-info"><h4>بيانات القاموس</h4><p>إشارات محملة للاستخدام بدون إنترنت</p></div><span class="storage-item-size">80 MB</span></div>
+                <div class="storage-item"><div class="storage-item-icon si-blue"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="storage-item-info"><h4>سجل الترجمات</h4><p>153 ترجمة محفوظة</p></div><span class="storage-item-size">25 MB</span></div>
+                <div class="storage-item"><div class="storage-item-icon si-purple"><i class="fa-solid fa-image"></i></div><div class="storage-item-info"><h4>ذاكرة التخزين المؤقت</h4><p>صور وملفات مؤقتة</p></div><span class="storage-item-size">15 MB</span></div>
+            </div>
+            <button class="btn-secondary" style="width:100%; margin-top:20px;"><i class="fa-solid fa-broom"></i> &nbsp;مسح ذاكرة التخزين المؤقت</button>
+            <div style="height:16px;"></div>
+        </div>
+
+        <!-- HELP -->
+        <div id="screen-help" class="screen">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                <div class="contact-card">
+                    <i class="fa-solid fa-comments"></i>
+                    <h4>دردشة مباشرة</h4>
+                    <p>متاح 24/7</p>
+                </div>
+                <div class="contact-card">
+                    <i class="fa-solid fa-envelope"></i>
+                    <h4>البريد الإلكتروني</h4>
+                    <p>support@ishara.app</p>
+                </div>
+            </div>
+            <h3 class="section-title">الأسئلة الشائعة</h3>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-q">كيف تعمل ميزة الترجمة الحية؟ <i class="fa-solid fa-chevron-left"></i></div>
+                <div class="faq-a">تستخدم الترجمة الحية كاميرا هاتفك لرصد حركات يديك في الوقت الفعلي، ثم تحلل الذكاء الاصطناعي هذه الحركات وتحولها إلى نص مكتوب فوراً.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-q">هل يعمل التطبيق بدون إنترنت؟ <i class="fa-solid fa-chevron-left"></i></div>
+                <div class="faq-a">نعم، يمكنك تحميل القاموس والدروس للاستخدام بدون إنترنت من خلال إعدادات التطبيق. ميزة الترجمة الحية تحتاج اتصالاً للإصدار الكامل.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-q">كيف أبلغ عن مشكلة؟ <i class="fa-solid fa-chevron-left"></i></div>
+                <div class="faq-a">يمكنك التواصل معنا عبر خيار "دردشة مباشرة" أعلاه، أو إرسال بريد إلكتروني لفريق الدعم. نرد خلال 24 ساعة.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <div class="faq-q">هل بياناتي محمية؟ <i class="fa-solid fa-chevron-left"></i></div>
+                <div class="faq-a">نعم، جميع بياناتك مشفرة باستخدام تشفير AES-256. لا نشارك بيانات شخصية مع أطراف ثالثة بدون إذنك الصريح.</div>
+            </div>
+            <div style="height:16px;"></div>
+        </div>
+
+        <!-- ABOUT -->
+        <div id="screen-about" class="screen">
+            <div class="about-logo">
+                <i class="fa-solid fa-hands-asl-interpreting"></i>
+                <h2>إشـارة</h2>
+                <p>تواصل بلا حدود</p>
+                <span class="version-badge">الإصدار 2.1.0</span>
+            </div>
+            <div class="about-stat">
+                <div class="stat-item"><h3>50K+</h3><p>مستخدم نشط</p></div>
+                <div class="stat-item"><h3>1200+</h3><p>إشارة في القاموس</p></div>
+                <div class="stat-item"><h3>4.8 ★</h3><p>تقييم المتجر</p></div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">حول التطبيق</div>
+                <div class="settings-card">
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-gold"><i class="fa-solid fa-file-lines"></i></div>سياسة الخصوصية</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-blue"><i class="fa-solid fa-scale-balanced"></i></div>شروط الاستخدام</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-green"><i class="fa-solid fa-star"></i></div>قيّم التطبيق</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-left"><div class="setting-icon si-purple"><i class="fa-solid fa-share-nodes"></i></div>شارك التطبيق</div>
+                        <div class="setting-right"><i class="fa-solid fa-chevron-left"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:18px; margin-bottom:20px;">
+                <h4 style="color:var(--text-main); margin-bottom:12px; font-size:0.95rem;">فريق التطوير</h4>
+                <div class="team-row"><div class="team-avatar"><i class="fa-solid fa-user-tie"></i></div><div class="team-info"><h4>محمود حجازي</h4><p>مؤسس ومطور رئيسي</p></div></div>
+                <div class="team-row"><div class="team-avatar"><i class="fa-solid fa-palette"></i></div><div class="team-info"><h4>فريق التصميم</h4><p>تجربة المستخدم وواجهة التطبيق</p></div></div>
+            </div>
+            <p style="text-align:center; color:var(--text-muted); font-size:0.78rem; margin-bottom:20px;">صُنع بـ ❤️ لدعم مجتمع الصم وضعاف السمع</p>
+        </div>
+
+    </main>
+
+    <!-- ===== VIDEO CALL OVERLAY ===== -->
+    <div id="screen-videocall" class="videocall-container">
+        <div class="videocall-main">
+            <div class="videocall-header">
+                <i class="fa-solid fa-chevron-down" onclick="endVideoCall()"></i>
+                <div class="videocall-name">
+                    <h3>د. سارة أحمد</h3>
+                    <p>02:14 • ترجمة حية مفعّلة</p>
+                </div>
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div class="videocall-translation">
+                <span>ترجمة حية — إشارة إلى نص:</span>
+                <p>أهلاً بك، كيف يمكنني مساعدتك اليوم؟</p>
+            </div>
+            <div class="videocall-overlay-small"></div>
+            <div class="videocall-controls">
+                <button class="call-btn"><i class="fa-solid fa-microphone-slash"></i></button>
+                <button class="call-btn"><i class="fa-solid fa-camera"></i></button>
+                <button class="call-btn"><i class="fa-solid fa-closed-captioning"></i></button>
+                <button class="call-btn end-call" onclick="endVideoCall()"><i class="fa-solid fa-phone-slash"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== BOTTOM NAV ===== -->
+    <nav class="bottom-nav" id="bottomNav" style="display:none;">
+        <div class="nav-item active" onclick="navigate('home')">
+            <i class="fa-solid fa-house"></i><span>الرئيسية</span><div class="nav-dot"></div>
+        </div>
+        <div class="nav-item" onclick="navigate('learn')">
+            <i class="fa-solid fa-graduation-cap"></i><span>التعلم</span><div class="nav-dot"></div>
+        </div>
+        <div class="nav-item" onclick="navigate('history')">
+            <i class="fa-solid fa-bookmark"></i><span>السجل</span><div class="nav-dot"></div>
+        </div>
+        <div class="nav-item" onclick="navigate('settings')">
+            <i class="fa-solid fa-gear"></i><span>الإعدادات</span><div class="nav-dot"></div>
+        </div>
+    </nav>
+</div>
+
+<script>
+    /* ==============================
+       SCREEN ROUTING
+    ============================== */
+    const screenTitles = {
+        'home':'', 'translator':'المترجم الآلي', 'camera':'الترجمة الحية',
+        'dictionary':'القاموس الإشاري', 'learn':'التعلم', 'history':'سجل الترجمات',
+        'settings':'الإعدادات', 'edit-profile':'تعديل الملف الشخصي',
+        'privacy':'الخصوصية والأمان', 'notifications':'الإشعارات',
+        'language':'اللغة', 'storage':'التخزين', 'help':'المساعدة',
+        'about':'حول التطبيق'
+    };
+    const navMap = {
+        'home':0, 'translator':-1, 'camera':-1, 'dictionary':-1,
+        'learn':1, 'history':2, 'settings':3,
+        'edit-profile':3, 'privacy':3, 'notifications':3,
+        'language':3, 'storage':3, 'help':3, 'about':3
+    };
+    let historyStack = [];
+    const AUTH_SCREENS = ['login','register','forgot','otp','onboarding'];
+
+    // After splash → onboarding
+    setTimeout(() => {
+        document.getElementById('screen-splash').classList.remove('active');
+        document.getElementById('screen-onboarding').classList.add('active');
+        document.getElementById('screen-onboarding').style.display = 'flex';
+    }, 3500);
+
+    /* ====== ONBOARDING ====== */
+    let currentSlide = 0;
+    const totalSlides = 3;
+
+    function goToSlide(idx) {
+        currentSlide = idx;
+        document.getElementById('onboardTrack').style.transform = `translateX(${idx * 33.333}%)`;
+        document.querySelectorAll('.onboard-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+        document.getElementById('onboardPrevBtn').style.display = idx > 0 ? 'block' : 'none';
+        document.getElementById('onboardNextBtn').textContent = idx === totalSlides - 1 ? 'ابدأ الآن' : 'التالي';
+    }
+
+    function nextSlide() {
+        if (currentSlide < totalSlides - 1) {
+            goToSlide(currentSlide + 1);
+        } else {
+            skipOnboarding();
+        }
+    }
+
+    function prevSlide() {
+        if (currentSlide > 0) goToSlide(currentSlide - 1);
+    }
+
+    function skipOnboarding() {
+        document.getElementById('screen-onboarding').classList.remove('active');
+        document.getElementById('screen-onboarding').style.display = 'none';
+        document.getElementById('screen-login').classList.add('active');
+        document.getElementById('screen-login').style.display = 'flex';
+    }
+
+    /* ====== AUTH NAVIGATION (pre-login screens) ====== */
+    function navigateAuth(screenId) {
+        AUTH_SCREENS.forEach(s => {
+            const el = document.getElementById('screen-' + s);
+            if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+        });
+        const target = document.getElementById('screen-' + screenId);
+        if (target) { target.classList.add('active'); target.style.display = 'flex'; }
+        // Start OTP timer if going to OTP
+        if (screenId === 'otp') startOtpTimer();
+    }
+
+    /* ====== OTP TIMER ====== */
+    let otpInterval;
+    function startOtpTimer() {
+        let sec = 59;
+        const el = document.getElementById('otpTimer');
+        clearInterval(otpInterval);
+        otpInterval = setInterval(() => {
+            el.textContent = sec > 0 ? '(' + sec-- + ')' : '';
+            if (sec < 0) clearInterval(otpInterval);
+        }, 1000);
+    }
+
+    /* ====== MAIN APP NAVIGATION ====== */
+    function navigate(screenId) {
+        const wasInApp = document.getElementById('mainContent').style.display === 'flex';
+
+        if (wasInApp) {
+            const current = document.querySelector('.main-content .screen.active');
+            if (current) {
+                const cid = current.id.replace('screen-','');
+                if (cid !== screenId) historyStack.push(cid);
+            }
+        }
+
+        // Hide auth screens
+        AUTH_SCREENS.forEach(s => {
+            const el = document.getElementById('screen-' + s);
+            if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+        });
+
+        document.getElementById('mainHeader').style.display = 'flex';
+        document.getElementById('mainContent').style.display = 'flex';
+        document.getElementById('bottomNav').style.display = 'flex';
+
+        document.querySelectorAll('.main-content .screen').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById('screen-' + screenId);
+        if (target) target.classList.add('active');
+        document.getElementById('mainContent').scrollTop = 0;
+
+        _applyHeader(screenId);
+        updateNav(navMap[screenId] ?? -1);
+    }
+
+    function _applyHeader(screenId) {
+        const backBtn = document.getElementById('backBtn');
+        const greeting = document.getElementById('greetingContainer');
+        const titleCont = document.getElementById('titleContainer');
+        const profileBtn = document.getElementById('profileBtn');
+
+        if (screenId === 'home') {
+            historyStack = [];
+            backBtn.style.display = 'none';
+            greeting.style.display = 'block';
+            titleCont.style.display = 'none';
+            profileBtn.style.display = 'flex';
+        } else {
+            backBtn.style.display = 'flex';
+            greeting.style.display = 'none';
+            titleCont.style.display = 'block';
+            document.getElementById('pageTitle').innerText = screenTitles[screenId] || '';
+            profileBtn.style.display = screenId === 'settings' ? 'none' : 'flex';
+        }
+    }
+
+    function goBack() {
+        if (historyStack.length > 0) {
+            const prev = historyStack.pop();
+            document.querySelectorAll('.main-content .screen').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById('screen-' + prev);
+            if (target) target.classList.add('active');
+            document.getElementById('mainContent').scrollTop = 0;
+            _applyHeader(prev);
+            updateNav(navMap[prev] ?? -1);
+        } else {
+            navigate('home');
+        }
+    }
+
+    function updateNav(index) {
+        document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === index));
+    }
+
+    function logout() {
+        historyStack = [];
+        document.getElementById('mainHeader').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        document.querySelectorAll('.main-content .screen').forEach(s => s.classList.remove('active'));
+        navigateAuth('login');
+        showToast('info', 'تم تسجيل الخروج', 'نراك قريباً!');
+    }
+
+    /* ====== THEME ====== */
+    function toggleTheme() {
+        const checked = document.getElementById('themeToggle').checked;
+        document.body.setAttribute('data-theme', checked ? 'dark' : 'light');
+        showToast('info', checked ? 'الوضع المظلم مفعّل' : 'الوضع الفاتح مفعّل', '');
+    }
+
+    /* ====== VIDEO CALL ====== */
+    function startVideoCall() { document.getElementById('screen-videocall').style.display = 'flex'; }
+    function endVideoCall() { document.getElementById('screen-videocall').style.display = 'none'; }
+
+    /* ====== LESSON ====== */
+    function checkLesson() {
+        document.getElementById('lessonResult').classList.add('show');
+        showToast('success', 'أحسنت! إشارة صحيحة', 'واصل التقدم 🎉');
+    }
+
+    /* ====== FAQ ====== */
+    function toggleFAQ(el) { el.classList.toggle('open'); }
+
+    /* ====== TOAST NOTIFICATIONS ====== */
+    function showToast(type, title, subtitle) {
+        if (!title) return;
+        const container = document.getElementById('toastContainer');
+        const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-bell' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon"><i class="fa-solid ${icons[type] || 'fa-bell'}"></i></div>
+            <div style="flex:1;"><p>${title}</p>${subtitle ? `<span>${subtitle}</span>` : ''}</div>
+            <i class="fa-solid fa-xmark" style="color:var(--text-muted);cursor:pointer;font-size:0.85rem;" onclick="dismissToast(this.parentElement)"></i>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => dismissToast(toast), 3500);
+    }
+    function dismissToast(el) {
+        if (!el || !el.parentElement) return;
+        el.classList.add('hiding');
+        setTimeout(() => el.remove(), 300);
+    }
+
+    /* ====== INTERACTIVE CHIPS ====== */
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.speed-selector').querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    document.querySelectorAll('.cat-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            this.closest('.dict-cats').querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            this.closest('.history-filters').querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.addEventListener('click', function() {
+            this.closest('#screen-language').querySelectorAll('.lang-option').forEach(o => {
+                o.classList.remove('selected');
+                const chk = o.querySelector('.lang-check');
+                if (chk) chk.remove();
+            });
+            this.classList.add('selected');
+            if (!this.querySelector('.lang-check')) {
+                const chk = document.createElement('i');
+                chk.className = 'fa-solid fa-circle-check lang-check';
+                this.appendChild(chk);
+            }
+            showToast('success', 'تم تغيير اللغة', this.querySelector('h4').textContent);
+        });
+    });
+
+    /* Touch swipe for onboarding */
+    const track = document.getElementById('onboardTrack');
+    let touchStartX = 0;
+    track.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, {passive:true});
+    track.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) diff > 0 ? nextSlide() : prevSlide();
+    }, {passive:true});
+</script>
+</body>
+</html>
